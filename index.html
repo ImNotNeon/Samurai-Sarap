@@ -351,6 +351,7 @@
     <p class="info">Enter your details before ordering</p>
     <input id="name" placeholder="Full Name" />
     <input id="section" placeholder="Section (ex. 12A)" />
+    <input id="contact" placeholder="Instagram or Contact Number" />
     <button onclick="startOrder()">Continue</button>
     <p id="load-status" class="info"></p>
     <p id="load-error" class="error" style="display:none"></p>
@@ -358,6 +359,7 @@
 
   <div class="container hidden" id="menu-page">
     <h2>Menu</h2>
+     <img src="MENU.jpg" alt="Menu" style="width:100%; max-width:450px; display:block; margin:15px auto; border-radius:12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
     <div id="menu-list" class="menu-list">Loading menu...</div>
     <button onclick="goToCart()">View Cart 🛒</button>
   </div>
@@ -395,6 +397,8 @@
 
   <div class="container hidden" id="checkout-page">
     <h2>Checkout 💳</h2>
+    <p>Select pickup date (Nov 10–15, 2025):</p>
+      <input type="date" id="pickupDate" min="2025-11-10" max="2025-11-15" required />
     <p>Select pickup time:</p>
     <select id="pickupTime">
       <option value="Recess">Recess</option>
@@ -409,6 +413,10 @@
 
     <p>Scan the QR or see the details:</p>
     <img src="GCASH.jpg" alt="GCash QR" style="width:150px; display:block; margin:10px auto; border-radius:8px;">
+
+    <p>Type "YES" to confirm you understand: No cancellations or refunds once food preparation starts.</p>
+    <input type="text" id="agreement" placeholder='Type "YES" to agree' />
+
 
     <button onclick="backToCart()">Back to Cart 🛒</button>
 
@@ -438,7 +446,7 @@
   
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwP4axDsoISAHKT4PaB9CRi4sEL0IHLuEK5GqVvhmEvcIlqeVsx6K6Nr9bzKonda1Sv/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOutk5ooTLrlPpLxuGrB9sB4V8O__SO-BW1f4QA-m--ke6AZsNBxPooeSIvp_CRsN3/exec";
 
 let student = {};
 let cart = [];
@@ -469,11 +477,14 @@ async function loadMenu() {
 async function startOrder() {
   const name = document.getElementById("name").value.trim();
   const section = document.getElementById("section").value.trim();
-  if (!name || !section) {
-    alert("Please enter your name and section.");
+  const contact = document.getElementById("contact").value.trim();
+
+  if (!name || !section || !contact) {
+    alert("Please enter your name, section, and contact/Instagram.");
     return;
   }
-  student = { name, section };
+
+  student = { name, section, contact };
   showLoading("Please wait... Loading menu 🍱");
   if (!menuLoaded) await loadMenu();
   hideLoading();
@@ -834,11 +845,18 @@ function backToCart() {
 }
 
 async function submitOrder() {
+  const pickupDate = document.getElementById("pickupDate").value;
   const pickupTime = document.getElementById("pickupTime").value;
   const customTime = document.getElementById("customTime").value;
   const referenceNumber = document.getElementById("referenceNumber").value.trim();
+  const agreement = document.getElementById("agreement").value.trim().toUpperCase();
 
   const finalPickupTime = pickupTime === "Custom" ? customTime : pickupTime;
+  
+  if (!pickupDate) {
+    alert("Please select a pickup date.");
+    return;
+  }
 
   if (!referenceNumber) {
     alert("Please enter your GCash reference number.");
@@ -850,15 +868,23 @@ async function submitOrder() {
     return;
   }
 
+  if (agreement !== "YES") {
+    alert('You must type "YES" to agree before submitting.');
+    return;
+  }
+
   // now finalPickupTime contains either Recess/Lunch/custom value
   console.log("Final pickup time:", finalPickupTime);
 
   const payload = new FormData();
   payload.append("studentName", student.name);
   payload.append("section", student.section);
+  payload.append("contact", student.contact);
+  payload.append("pickupDate", pickupDate);
   payload.append("pickupTime", finalPickupTime);
   payload.append("cartItems", JSON.stringify(cart));
   payload.append("referenceNumber", referenceNumber);
+  payload.append("agreement", agreement);
 
   showLoading("Please wait... Confirming your order 🧾");
 
