@@ -397,8 +397,8 @@
 
   <div class="container hidden" id="checkout-page">
     <h2>Checkout 💳</h2>
-    <p>Select pickup date (Nov 10–15, 2025):</p>
-      <input type="date" id="pickupDate" min="2025-11-10" max="2025-11-15" required />
+    <p>Select pickup date (Nov 11–15, 2025):</p>
+      <input type="date" id="pickupDate" min="2025-11-11" max="2025-11-15" required />
     <p>Select pickup time:</p>
     <select id="pickupTime">
       <option value="Recess">Recess</option>
@@ -867,7 +867,7 @@ async function submitOrder() {
   }
 
   if (!allowedDates.includes(pickupDate)) {
-    alert("Only November 10, 11, 12, 14, and 15 are available for pickup.");
+    alert("Only November 11, 12, 14, and 15 are available for pickup.");
     return;
   }
 
